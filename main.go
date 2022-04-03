@@ -13,7 +13,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := ddd.Do(repo); err != nil {
+	//t1 := time.Date(2021, 4, 3, 0, 0, 0, 0, time.Local)
+	//t2 := time.Date(2022, 4, 3, 23, 59, 59, 99999, time.Local)
+	cond := common.NewConditions(3, nil, nil)
+
+	ddd := ddd.NewDDDAnalyzer(repo, *cond)
+	if err := ddd.Do(); err != nil {
 		log.Fatal(err)
 	}
 }
