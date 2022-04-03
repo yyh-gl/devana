@@ -11,7 +11,7 @@ import (
 type Records [][]string
 
 func OutputResult(analyticsMethodName string, records Records) {
-	fmt.Printf("▼ Analytics result by %s ▼\n", analyticsMethodName)
+	fmt.Printf("▼ %s ▼\n", analyticsMethodName)
 
 	table := tablewriter.NewWriter(os.Stdout)
 	for _, r := range records {

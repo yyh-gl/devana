@@ -19,3 +19,17 @@ func CountBusinessDay(since, until time.Time) int {
 	}
 	return count
 }
+
+func ConvertToSinceDatetime(src string) time.Time {
+	layout := "2006-01-02"
+	t, _ := time.Parse(layout, src)
+	t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local)
+	return t
+}
+
+func ConvertToUntilDatetime(src string) time.Time {
+	layout := "2006-01-02"
+	t, _ := time.Parse(layout, src)
+	t = time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 999999999, time.Local)
+	return t
+}

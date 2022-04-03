@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -20,11 +21,26 @@ type (
 	Tags []Tag
 )
 
-func NewGitRepository(url string) (*GitRepository, error) {
-	r, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{URL: url})
+func NewGitRepository(url string, token string) (*GitRepository, error) {
+	opt := git.CloneOptions{
+		URL:   url,
+		Depth: 1,
+		// TODO: -vオプション指定時は出力
+		//Progress: os.Stdout,
+	}
+	if token != "" {
+		opt.Auth = &http.BasicAuth{
+			// 空文字以外であればOK
+			Username: "ninja",
+			Password: token,
+		}
+	}
+
+	r, err := git.Clone(memory.NewStorage(), nil, &opt)
 	if err != nil {
 		return nil, err
 	}
+
 	return &GitRepository{Repository: r}, nil
 }
 
