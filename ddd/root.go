@@ -4,12 +4,8 @@ import (
 	"github.com/yyh-gl/devana/common"
 )
 
-const (
-	analyticsMethodName = "d/d/d"
-
-	// 理想値
-	ideal float64 = 0.1
-)
+// 理想値
+const ideal float64 = 0.1
 
 type DDDAnalyzer struct {
 	repo       *common.GitRepository
@@ -20,10 +16,14 @@ func NewDDDAnalyzer(repo *common.GitRepository, cond common.Conditions) common.A
 	return &DDDAnalyzer{repo: repo, conditions: cond}
 }
 
-func (d DDDAnalyzer) Do() error {
+func (d DDDAnalyzer) Name() string {
+	return "d/d/d"
+}
+
+func (d DDDAnalyzer) Do() (common.Records, error) {
 	tags, err := d.repo.FetchTags(d.conditions.Since, d.conditions.Until)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	deployTotalCount := float64(len(tags))
@@ -34,6 +34,5 @@ func (d DDDAnalyzer) Do() error {
 		{"ideal", common.ConvertToString(ideal)},
 		{"result", common.ConvertToString(deployCountPerDay / float64(d.conditions.DevelopmentMemberNum))},
 	}
-	common.OutputResult(analyticsMethodName, records)
-	return nil
+	return records, nil
 }

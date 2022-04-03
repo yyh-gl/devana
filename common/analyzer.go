@@ -3,7 +3,8 @@ package common
 import "time"
 
 type Analyzer interface {
-	Do() error
+	Name() string
+	Do() (Records, error)
 }
 
 type Conditions struct {

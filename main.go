@@ -17,8 +17,13 @@ func main() {
 	//t2 := time.Date(2022, 4, 3, 23, 59, 59, 99999, time.Local)
 	cond := common.NewConditions(3, nil, nil)
 
-	ddd := ddd.NewDDDAnalyzer(repo, *cond)
-	if err := ddd.Do(); err != nil {
-		log.Fatal(err)
+	analyzers := []common.Analyzer{ddd.NewDDDAnalyzer(repo, *cond)}
+	for _, a := range analyzers {
+		records, err := a.Do()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		common.OutputResult(a.Name(), records)
 	}
 }
