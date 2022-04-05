@@ -1,10 +1,13 @@
 package common
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Analyzer interface {
 	Name() string
-	Do() (Records, error)
+	Do(context.Context) (Records, error)
 }
 
 type Conditions struct {

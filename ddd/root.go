@@ -1,6 +1,7 @@
 package ddd
 
 import (
+	"context"
 	"github.com/yyh-gl/devana/common"
 )
 
@@ -12,7 +13,7 @@ type Analyzer struct {
 	conditions common.Conditions
 }
 
-func NewDDDAnalyzer(client *common.GitClient, cond common.Conditions) common.Analyzer {
+func NewAnalyzer(client *common.GitClient, cond common.Conditions) common.Analyzer {
 	return &Analyzer{client: client, conditions: cond}
 }
 
@@ -20,7 +21,7 @@ func (a Analyzer) Name() string {
 	return "d/d/d"
 }
 
-func (a Analyzer) Do() (common.Records, error) {
+func (a Analyzer) Do(_ context.Context) (common.Records, error) {
 	tags, err := a.client.FetchTags(a.conditions.Since, a.conditions.Until)
 	if err != nil {
 		return nil, err
