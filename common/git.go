@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	GitRepository struct {
+	GitClient struct {
 		*git.Repository
 	}
 
@@ -21,7 +21,7 @@ type (
 	Tags []Tag
 )
 
-func NewGitRepository(url string, token string) (*GitRepository, error) {
+func NewGitClient(url string, token string) (*GitClient, error) {
 	opt := git.CloneOptions{
 		URL:   url,
 		Depth: 1,
@@ -41,18 +41,18 @@ func NewGitRepository(url string, token string) (*GitRepository, error) {
 		return nil, err
 	}
 
-	return &GitRepository{Repository: r}, nil
+	return &GitClient{Repository: r}, nil
 }
 
-func (gr GitRepository) FetchTags(since, until time.Time) (Tags, error) {
-	iter, err := gr.Tags()
+func (c GitClient) FetchTags(since, until time.Time) (Tags, error) {
+	iter, err := c.Tags()
 	if err != nil {
 		return nil, err
 	}
 
 	var tags Tags
 	err = iter.ForEach(func(t *plumbing.Reference) error {
-		obj, err := gr.CommitObject(t.Hash())
+		obj, err := c.CommitObject(t.Hash())
 		if err != nil {
 			return err
 		}

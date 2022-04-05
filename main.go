@@ -29,7 +29,7 @@ $ devana <url> <since> <until> <token>
 		token = os.Args[4]
 	}
 
-	repo, err := common.NewGitRepository(url, token)
+	client, err := common.NewGitClient(url, token)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -37,7 +37,7 @@ $ devana <url> <since> <until> <token>
 	cond := common.NewConditions(3, since, until)
 
 	fmt.Println(fmt.Sprintf("調査期間: %v ~ %v", since, until))
-	analyzers := []common.Analyzer{ddd.NewDDDAnalyzer(repo, *cond)}
+	analyzers := []common.Analyzer{ddd.NewDDDAnalyzer(client, *cond)}
 	for _, a := range analyzers {
 		records, err := a.Do()
 		if err != nil {

@@ -7,32 +7,32 @@ import (
 // 理想値
 const ideal float64 = 0.1
 
-type DDDAnalyzer struct {
-	repo       *common.GitRepository
+type Analyzer struct {
+	client     *common.GitClient
 	conditions common.Conditions
 }
 
-func NewDDDAnalyzer(repo *common.GitRepository, cond common.Conditions) common.Analyzer {
-	return &DDDAnalyzer{repo: repo, conditions: cond}
+func NewDDDAnalyzer(client *common.GitClient, cond common.Conditions) common.Analyzer {
+	return &Analyzer{client: client, conditions: cond}
 }
 
-func (d DDDAnalyzer) Name() string {
+func (a Analyzer) Name() string {
 	return "d/d/d"
 }
 
-func (d DDDAnalyzer) Do() (common.Records, error) {
-	tags, err := d.repo.FetchTags(d.conditions.Since, d.conditions.Until)
+func (a Analyzer) Do() (common.Records, error) {
+	tags, err := a.client.FetchTags(a.conditions.Since, a.conditions.Until)
 	if err != nil {
 		return nil, err
 	}
 
 	deployTotalCount := float64(len(tags))
-	businessDayCount := float64(common.CountBusinessDay(d.conditions.Since, d.conditions.Until))
+	businessDayCount := float64(common.CountBusinessDay(a.conditions.Since, a.conditions.Until))
 	deployCountPerDay := deployTotalCount / businessDayCount
 
 	records := common.Records{
 		{"ideal", common.ConvertToString(ideal)},
-		{"result", common.ConvertToString(deployCountPerDay / float64(d.conditions.DevelopmentMemberNum))},
+		{"result", common.ConvertToString(deployCountPerDay / float64(a.conditions.DevelopmentMemberNum))},
 	}
 	return records, nil
 }
