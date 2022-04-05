@@ -1,14 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/yyh-gl/devana/ddd"
+	"github.com/yyh-gl/devana/pr_lead_time"
 	"os"
 
 	"github.com/yyh-gl/devana/common"
-	"github.com/yyh-gl/devana/ddd"
 )
 
 func main() {
+	ctx := context.Background()
+
 	// TODO: トークンの受け取り方を変更
 	if len(os.Args) < 4 {
 		msg := fmt.Sprintf(`以下のとおり引数を指定してください。
@@ -29,17 +33,26 @@ $ devana <url> <since> <until> <token>
 		token = os.Args[4]
 	}
 
-	client, err := common.NewGitClient(url, token)
+	gitClient, err := common.NewGitClient(url, token)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	gitHubClient, err := common.NewGitHubClient(ctx, url, token)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	cond := common.NewConditions(3, since, until)
 
 	fmt.Println(fmt.Sprintf("調査期間: %v ~ %v", since, until))
-	analyzers := []common.Analyzer{ddd.NewDDDAnalyzer(client, *cond)}
+	analyzers := []common.Analyzer{
+		ddd.NewAnalyzer(gitClient, *cond),
+		pr_lead_time.NewAnalyzer(gitHubClient, *cond),
+	}
 	for _, a := range analyzers {
-		records, err := a.Do()
+		records, err := a.Do(ctx)
 		if err != nil {
 			fmt.Println(err)
 		}
