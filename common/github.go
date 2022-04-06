@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/go-github/v43/github"
 	"golang.org/x/oauth2"
+	"path"
 	"strings"
 	"time"
 )
@@ -14,8 +15,9 @@ type (
 	GitHubClient struct {
 		*github.Client
 
-		Owner      string
-		Repository string
+		Owner        string
+		Repository   string
+		IsEnterprise bool
 	}
 
 	PR struct {
@@ -26,18 +28,35 @@ type (
 	PRs []PR
 )
 
-func NewGitHubClient(ctx context.Context, url, token string) (*GitHubClient, error) {
+func NewGitHubClient(ctx context.Context, url, token string, isEnterprise bool) (*GitHubClient, error) {
+	urlParts := strings.Split(url, "/")
+	owner, repo := urlParts[len(urlParts)-2], urlParts[len(urlParts)-1]
+
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(ctx, ts)
+
+	if isEnterprise {
+		// TODO: urlパッケージ使ってbaseURL作る
+		gitHubBaseURL := "https://" + path.Join(strings.Join(urlParts[2:len(urlParts)-2], ""), "/api/v3")
+		c, err := github.NewEnterpriseClient(gitHubBaseURL, "", tc)
+		if err != nil {
+			return nil, err
+		}
+
+		return &GitHubClient{
+			Client:       c,
+			Owner:        owner,
+			Repository:   repo,
+			IsEnterprise: true,
+		}, nil
+	}
+
 	c := github.NewClient(tc)
-
-	strs := strings.Split(url, "/")
-	owner, repo := strs[len(strs)-2], strs[len(strs)-1]
-
 	return &GitHubClient{
-		Client:     c,
-		Owner:      owner,
-		Repository: repo,
+		Client:       c,
+		Owner:        owner,
+		Repository:   repo,
+		IsEnterprise: false,
 	}, nil
 }
 

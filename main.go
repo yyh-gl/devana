@@ -16,11 +16,12 @@ func main() {
 	// TODO: トークンの受け取り方を変更
 	if len(os.Args) < 4 {
 		msg := fmt.Sprintf(`以下のとおり引数を指定してください。
-$ devana <url> <since> <until> <token>
+$ devana <url> <since> <until> <token> <is_enterprise>
 => url:   調査対象のGitリポジトリURL【必須】
-   since: 調査対象期間の開始日（例：2022-04-01）【必須】
-   until: 調査対象期間の開始日（例：2022-09-30）【必須】
-   token: プライベートリポジトリアクセス用のトークン（Personal access tokens）【任意】
+   since: 調査対象期間の開始日（文字列 例：2022-04-01）【必須】
+   until: 調査対象期間の開始日（文字列 例：2022-09-30）【必須】
+   token: プライベートリポジトリアクセス用のトークン（文字列 Personal access tokens）【任意】
+   is_enterprise: GHE対応モード（真偽値）【任意】
 `)
 		fmt.Println(msg)
 		os.Exit(1)
@@ -32,13 +33,17 @@ $ devana <url> <since> <until> <token>
 	if len(os.Args) >= 5 {
 		token = os.Args[4]
 	}
+	isEnterprise := false
+	if len(os.Args) >= 6 {
+		isEnterprise = os.Args[5] == "true"
+	}
 
 	gitClient, err := common.NewGitClient(url, token)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	gitHubClient, err := common.NewGitHubClient(ctx, url, token)
+	githubClient, err := common.NewGitHubClient(ctx, url, token, isEnterprise)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -49,7 +54,7 @@ $ devana <url> <since> <until> <token>
 	fmt.Println(fmt.Sprintf("調査期間: %v ~ %v", since, until))
 	analyzers := []common.Analyzer{
 		ddd.NewAnalyzer(gitClient, *cond),
-		pr_lead_time.NewAnalyzer(gitHubClient, *cond),
+		pr_lead_time.NewAnalyzer(githubClient, *cond),
 	}
 	for _, a := range analyzers {
 		records, err := a.Do(ctx)
